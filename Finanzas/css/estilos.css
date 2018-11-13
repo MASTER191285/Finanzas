@@ -1,0 +1,10 @@
+
+.errorMsg{color: #cc0000;margin-bottom: 10px}
+
+#titulo, #monto, #fecha, #tipoIngreso, #observaciones{
+	color:  #cacfd2;
+}
+
+#txtObservaciones{
+	resize: none;
+}
