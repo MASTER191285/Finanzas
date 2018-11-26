@@ -28,8 +28,7 @@
 				$query = "SELECT id, descripcion FROM tipo_gasto";
 				$stmt = $db->prepare($query);
 
-				$stmt->execute();   				
-				var_dump($stmt);
+				$stmt->execute();				
 				echo "<option value='' disabled selected>SELECCIONE TIPO GASTO</option>";			
 				while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 					extract($row);							
@@ -56,7 +55,7 @@
 		        	$observaciones=htmlspecialchars(strip_tags($_POST['observaciones']));
 		        }
 		        $id_usuario=htmlspecialchars(strip_tags($_POST['id_user']));
-		        
+
 		        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		        $query = "INSERT INTO ingresos (monto,fecha, id_tipo_ingreso, observaciones, id_usuario) values(?, ?, ?, ?, ?)";
 		        $inserccion = $db->prepare($query);
@@ -96,10 +95,11 @@
 		        }else{
 		        	$observaciones=htmlspecialchars(strip_tags($_POST['observaciones']));
 		        }
+		        $id_usuario=htmlspecialchars(strip_tags($_POST['id_user']));
 		        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		        $query = "INSERT INTO gastos (monto,fecha, id_tipo_gasto, observaciones) values(?, ?, ?, ?)";
+		        $query = "INSERT INTO gastos (monto,fecha, id_tipo_gasto, observaciones, id_usuario) values(?, ?, ?, ?, ?)";
 		        $inserccion = $db->prepare($query);
-				$inserccion->execute(array($monto,date($fecha),$tipoGasto, $observaciones));            
+				$inserccion->execute(array($monto,date($fecha),$tipoGasto, $observaciones, $id_usuario));            
                  
 		        if($inserccion){		            
 		            $mensaje = "<div class='alert alert-success alert-dismissible fade show' role='alert'>";
@@ -118,6 +118,55 @@
     		}     	
     		catch(PDOException $exception){
         	die('ERROR: ' . $exception->getMessage());
+    		}
+    	}
+
+    	function buscaGastos(){
+    		
+    		try {
+
+    			$db = getDB();
+    			 $salida = "";
+			    $query = "SELECT G.monto, G.fecha, G.observaciones, TG.descripcion FROM gastos G INNER JOIN tipo_gasto TG ON G.id_tipo_gasto=TG.id ORDER BY G.monto LIMIT 20";
+
+			    if (isset($_POST['consulta'])) {
+			    	$q = $conn->real_escape_string($_POST['consulta']);
+			    $query = "SELECT G.monto, G.fecha, G.observaciones, TG.descripcion FROM gastos G INNER JOIN tipo_gasto TG ON G.id_tipo_gasto=TG.id WHERE G.monto LIKE '%$q%' OR G.observaciones LIKE '%$q%' OR TG.descripcion LIKE '%$q%'";
+			    }
+			    $stmt = $db->prepare($query);
+
+			    //$resultado = $conn->query($query);
+			    $stmt->execute();
+			    if ($stmt->num_rows>0) {
+			    	$salida.="<table border=1 class='tabla_datos'>
+			    			<thead>
+			    				<tr id='titulo'>
+			    					<td>Monto</td>
+			    					<td>Fecha</td>
+			    					<td>Observaciones</td>
+			    					<td>Descripcion</td>
+			    					<td>Accion</td>
+			    				</tr>
+			    			</thead>  			
+			    	<tbody>";
+
+			    	while ($fila = $stmt->fetch_assoc()) {
+			    		$salida.="<tr>
+			    					<td>".$fila['monto']."</td>
+			    					<td>".$fila['fecha']."</td>
+			    					<td>".$fila['observaciones']."</td>
+			    					<td>".$fila['descripcion']."</td>			    					
+			    				</tr>";
+
+			    	}
+			    	$salida.="</tbody></table>";
+			    }else{
+			    	$salida.="Sin Registros....";
+			    }
+
+			    echo $salida;	        			
+    		} catch (Exception $e) {
+    			echo '{"error":{"text":'. $e->getMessage() .'}}';
     		}
     	}    	
 
