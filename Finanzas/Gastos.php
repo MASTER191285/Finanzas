@@ -49,6 +49,7 @@ $userDetails=$userClass->userDetails($session_uid);
 	      <select class="custom-select" id="selectIng" name="tipoGasto" required><?php getTipoGasto(); ?></select> 	
 	    </div>
 	    <hr>
+	    <input type="hidden" name="id_user" id="id_user" value="<?php echo $session_uid ?>">
 	    <label for="comment" id="observaciones">Observaciones:</label>
   		<textarea class="form-control" id="txtObservaciones" name="observaciones" rows="3" cols="30" maxlength="100"></textarea>	    
 	  </div>
