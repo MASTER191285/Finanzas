@@ -23,7 +23,7 @@ $userDetails=$userClass->userDetails($session_uid);
 <fieldset>	
 	<legend id="titulo">Gasto a Registrar</legend>
 	<?php 
-		if ($_POST) {
+		if (isset($_POST["submit"]))  {
 			insertarGasto();
 		}
 	?>
@@ -31,12 +31,12 @@ $userDetails=$userClass->userDetails($session_uid);
 	  <div class="form-group">
 	    <label class="col-sm-2" id="monto"><i class="far fa-money-bill-alt"></i> Monto: </label>
 	    <div class="col-sm-4">
-	      <input type="number" required="" name="monto">
+	      <input type="number" name="monto" required>
 	    </div>
 	    <hr>
 	    <label class="col-sm-4" id="fecha"><i class="fas fa-calendar-alt"></i> Fecha: </label>
 	    <div class="col-sm-4">
-	      <input type="date" required="" name="fecha">
+	      <input type="date" required="" name="fecha" required>
 	    </div>
 	    <hr>
 	    <label class="col-sm-2" id="comprobante"><i class="fas fa-file-upload"></i> Comprobante: </label>
