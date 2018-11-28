@@ -1,4 +1,5 @@
 <?php 
+		#region AlimentaCombos
 		function getTipoIngreso(){
 
 			try {
@@ -38,14 +39,16 @@
 				echo '{"error":{"text":'. $e->getMessage() .'}}';
 			}
 		
-		}		
+		}
+		#endRegion		
+
 
 		function insertarIngreso(){			
 
      		try{    
      			getcwd();  	
      			$db = getDB();
-     			$mensaje = "";
+     			$mensaje = "";     			
 				$monto=htmlspecialchars(strip_tags($_POST['monto']));
 		        $fecha=htmlspecialchars(strip_tags($_POST['fecha']));
 		        $tipoIngreso=htmlspecialchars(strip_tags($_POST['tipoIngreso']));
@@ -53,13 +56,20 @@
 		        	$observaciones = "Sin Observaciones";
 		        }else{
 		        	$observaciones=htmlspecialchars(strip_tags($_POST['observaciones']));
-		        }
+		        }		        
 		        $id_usuario=htmlspecialchars(strip_tags($_POST['id_user']));
 
 		        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		        $query = "INSERT INTO ingresos (monto,fecha, id_tipo_ingreso, observaciones, id_usuario) values(?, ?, ?, ?, ?)";
 		        $inserccion = $db->prepare($query);
-				$inserccion->execute(array($monto,date($fecha),$tipoIngreso, $observaciones, $id_usuario));            
+				$inserccion->execute(
+				array(
+					$monto
+					,date($fecha)
+					,$tipoIngreso
+					,$observaciones
+					,$id_usuario
+				));            
                  
 		        if($inserccion){		            
 		            $mensaje = "<div class='alert alert-success alert-dismissible fade show' role='alert'>";
@@ -96,25 +106,62 @@
 		        	$observaciones=htmlspecialchars(strip_tags($_POST['observaciones']));
 		        }
 		        $id_usuario=htmlspecialchars(strip_tags($_POST['id_user']));
-		        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-		        $query = "INSERT INTO gastos (monto,fecha, id_tipo_gasto, observaciones, id_usuario) values(?, ?, ?, ?, ?)";
-		        $inserccion = $db->prepare($query);
-				$inserccion->execute(array($monto,date($fecha),$tipoGasto, $observaciones, $id_usuario));            
-                 
-		        if($inserccion){		            
-		            $mensaje = "<div class='alert alert-success alert-dismissible fade show' role='alert'>";
-		            $mensaje.= "<strong>Exito!</strong> Registro Insertado.";
-		            $mensaje.= "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>";
-		            $mensaje.= "<span aria-hidden='true'>&times;</span></button></div>";
-		            echo $mensaje;
-		        }else{
-					$mensaje = "<div class='alert alert-danger alert-dismissible fade show' role='alert'>";
-		            $mensaje.= "<strong>Error!</strong> Error al grabar.";
-		            $mensaje.= "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>";
-		            $mensaje.= "<span aria-hidden='true'>&times;</span></button></div>";
-		            echo $mensaje;
-		        }
-         
+
+		        /*Lógica de subida de archivo*/
+		        $directorio = "uploads/";
+				$archivo = basename($_FILES["comprobante"]["name"]);
+				$destino = $directorio . $archivo;
+				$tipoArchivo = pathinfo($destino,PATHINFO_EXTENSION);
+				
+				// Extensiones permitidas
+				$extPermitida = array('jpg','png','jpeg','pdf');
+				    if(in_array($tipoArchivo, $extPermitida)){
+				        // Subir archivo
+				        if(move_uploaded_file($_FILES["comprobante"]["tmp_name"], $destino)){
+				            
+					        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+					        $query = "INSERT INTO gastos (monto,fecha, id_tipo_gasto, observaciones, id_usuario, comprobante) values(?, ?, ?, ?, ?, ?)";
+					        $inserccion = $db->prepare($query);
+
+							$inserccion->execute(
+								array(
+									$monto
+									,date($fecha)
+									,$tipoGasto
+									,$observaciones
+									,$id_usuario
+									,$archivo
+							));
+
+					        if($inserccion){		            
+					            $mensaje = "<div class='alert alert-success alert-dismissible fade show' role='alert'>";
+					            $mensaje.= "<strong>Exito!</strong> Registro Insertado.";
+					            $mensaje.= "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>";
+					            $mensaje.= "<span aria-hidden='true'>&times;</span></button></div>";
+					            echo $mensaje;
+
+					        }else{
+								$mensaje = "<div class='alert alert-danger alert-dismissible fade show' role='alert'>";
+					            $mensaje.= "<strong>Error!</strong> Error al grabar.";
+					            $mensaje.= "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>";
+					            $mensaje.= "<span aria-hidden='true'>&times;</span></button></div>";
+					            echo $mensaje;
+					        }
+
+				        }else{
+								$mensaje = "<div class='alert alert-danger alert-dismissible fade show' role='alert'>";
+					            $mensaje.= "<strong>Error!</strong> Error al Subir el Archivo.";
+					            $mensaje.= "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>";
+					            $mensaje.= "<span aria-hidden='true'>&times;</span></button></div>";
+					            echo $mensaje;
+				        }
+				    }else{
+								$mensaje = "<div class='alert alert-danger alert-dismissible fade show' role='alert'>";
+					            $mensaje.= "<strong>Error!</strong> Extensión de archivo no permitida.";
+					            $mensaje.= "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>";
+					            $mensaje.= "<span aria-hidden='true'>&times;</span></button></div>";
+					            echo $mensaje;
+				    }		
     		}     	
     		catch(PDOException $exception){
         	die('ERROR: ' . $exception->getMessage());
